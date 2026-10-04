@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WFS - Estrutura de Liderança Administrativa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .bg-wfs-red { background-color: #da2525; }
+    .bg-wfs-red:hover { background-color: #b81d1d; }
+    .text-wfs-red { color: #da2525; }
+    .text-azul-corporativo { color: #1e40af; }
+    
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.92)), url('https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-20">
+
+  <!-- CABEÇALHO COM LOGO WFS E BARRA DE PESQUISA -->
+  <div class="hero-banner text-white pt-6 pb-8 px-4 sm:px-6 shadow-xl relative rounded-b-3xl border-b-4 border-red-600">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Topo: Logo WFS Oficial + Status + Botão Atualizar -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-3 bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 shadow-lg">
+          <div class="bg-wfs-red text-white font-black px-3 py-1.5 rounded-xl text-base tracking-wider shadow">WFS</div>
+          <div class="flex flex-col">
+            <span class="font-black text-[11px] tracking-widest text-white leading-tight">ESTRUTURA DE LIDERANÇA</span>
+            <span class="text-[9px] text-red-400 font-extrabold tracking-widest uppercase">ADMINISTRATIVA</span>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <div class="hidden sm:flex items-center space-x-2 text-xs bg-white/10 px-3 py-1.5 rounded-full backdrop-blur">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="font-semibold text-gray-200">Operação Ativa</span>
+          </div>
+          <!-- Botão Atualizar que atualiza e retorna à página principal -->
+          <button onclick="recarregarDadosManualmente()" id="btn-atualizar" class="bg-white/10 hover:bg-white/20 text-white p-2.5 rounded-full backdrop-blur transition shadow flex items-center justify-center cursor-pointer" title="Atualizar dados e voltar ao início">
+            <i class="fa fa-rotate text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Pesquisa por Nome ou Matrícula -->
+      <div class="relative mt-2">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400">
+          <i class="fa fa-search"></i>
+        </span>
+        <input type="text" id="input-busca-topo" oninput="executarPesquisaGeral()" placeholder="Pesquisar por nome ou matrícula..." class="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-gray-300 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:bg-white/20 focus:border-white transition shadow-inner">
+      </div>
+
+    </div>
+  </div>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 mt-6 flex-grow w-full">
+
+    <!-- SEÇÃO 1: PAINEL / INÍCIO -->
+    <div id="secao-painel" class="space-y-6">
+
+      <!-- CARDS DE KPI -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        
+        <!-- Cartão 1: Líderes Ativos -->
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm border-l-8 border-l-red-500 flex flex-col justify-between">
+          <div>
+            <div class="text-3xl font-black text-slate-800" id="kpid-lideres">0</div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">Líderes Ativos</div>
+          </div>
+          <div class="text-[11px] text-emerald-600 font-bold mt-4 flex items-center gap-1">
+            ↑ Operacionais
+          </div>
+        </div>
+
+        <!-- Cartão 2: Colaboradores -->
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm border-l-8 border-l-blue-500 flex flex-col justify-between">
+          <div>
+            <div class="text-3xl font-black text-slate-800" id="kpid-colaboradores">0</div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">Colaboradores</div>
+          </div>
+          <div class="text-[11px] text-slate-500 font-bold mt-4" id="kpid-detalhe-colaboradores">
+            Total na operação
+          </div>
+        </div>
+
+        <!-- Cartão 3: Média por Equipe -->
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm border-l-8 border-l-emerald-500 flex flex-col justify-between">
+          <div>
+            <div class="text-3xl font-black text-slate-800" id="kpid-media">0</div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">Média por Equipe</div>
+          </div>
+          <div class="text-[11px] text-slate-500 font-bold mt-4 truncate" id="kpid-maior-equipe">
+            Maior: -
+          </div>
+        </div>
+
+        <!-- Cartão 4: Terminais / Turnos -->
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm border-l-8 border-l-amber-500 flex flex-col justify-between">
+          <div>
+            <div class="text-3xl font-black text-slate-800" id="kpid-terminais-turnos">0 / 0</div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">Terminais / Turnos</div>
+          </div>
+          <div class="text-[11px] text-slate-500 font-bold mt-4 truncate" id="kpid-detalhe-turnos">
+            Locais ativos
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ESTRUTURA OPERACIONAL (Pílulas) -->
+      <div class="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm space-y-4">
+        <div class="flex justify-between items-center mb-1">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">ESTRUTURA OPERACIONAL</h3>
+          <button onclick="filtrarTerminalPílula('')" class="text-xs text-wfs-red font-bold hover:underline cursor-pointer">Ver todos</button>
+        </div>
+        <div id="botoes-terminais" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- LISTA DE LÍDERES COM CAIXA DE SELEÇÃO DE TAMANHO DE EQUIPE -->
+      <div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Líderes e Equipes</h3>
+          
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <!-- Caixa de Seleção para Filtrar por Menor, Maior ou Todas as Equipes -->
+            <select id="select-filtro-tamanho" onchange="mudarFiltroTamanhoEquipe()" class="bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:border-slate-400 cursor-pointer w-full sm:w-auto">
+              <option value="todas">Todas as Equipes</option>
+              <option value="maior">Maior Equipe</option>
+              <option value="menor">Menor Equipe</option>
+            </select>
+            <span class="text-xs text-slate-500 font-semibold whitespace-nowrap" id="contador-lideres">0 líderes</span>
+          </div>
+        </div>
+
+        <div id="grid-lideres" class="space-y-3">
+          <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm text-center text-slate-400">Carregando dados da operação...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEÇÃO 2: GESTÃO -->
+    <div id="secao-gestao" class="hidden space-y-6">
+      <div class="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Quantidade por Turno em Cada Terminal</h3>
+        <div id="resumo-turnos-terminais" class="space-y-4"></div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 3: RESULTADOS DA PESQUISA -->
+    <div id="secao-busca-resultados" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="voltarParaInicioPesquisa()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs uppercase transition flex items-center gap-2 cursor-pointer">
+          <i class="fa fa-arrow-left"></i> Voltar ao Início
+        </button>
+        <span class="text-xs text-slate-500 font-bold" id="qtd-resultados">0 resultados</span>
+      </div>
+
+      <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden p-5">
+        <div id="lista-resultados-busca" class="space-y-4">
+          <div class="p-6 text-center text-slate-400 text-xs">Digite um nome ou matrícula na barra acima.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 4: DETALHES DA EQUIPE DE UM LÍDER -->
+    <div id="secao-detalhe-equipe" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="voltarParaResultados()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs uppercase transition flex items-center gap-2 cursor-pointer">
+          <i class="fa fa-arrow-left"></i> Voltar
+        </button>
+      </div>
+
+      <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-4">
+        <div class="border-b border-slate-100 pb-4 space-y-1.5">
+          <h3 class="text-base font-black text-slate-900 uppercase" id="detalhe-lider-nome">Nome do Líder</h3>
+          
+          <div id="detalhe-total-equipe" class="text-sm font-extrabold text-azul-corporativo tracking-wide uppercase">
+            0 COLABORADORES NA EQUIPE
+          </div>
+
+          <p class="text-xs text-slate-500 font-mono">Matrícula: <span id="detalhe-lider-chapa" class="font-bold text-slate-700">--</span></p>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <span id="detalhe-lider-terminal" class="bg-slate-100 text-slate-700 font-bold text-[10px] px-2.5 py-1 rounded-full">Terminal</span>
+            <span id="detalhe-lider-turno" class="bg-amber-100 text-amber-800 font-bold text-[10px] px-2.5 py-1 rounded-full">Turno</span>
+          </div>
+        </div>
+
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider pt-2">Lista de Colaboradores da Equipe</h4>
+        <div id="lista-membros-equipe" class="space-y-3"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
+  <nav aria-label="Navegação Principal" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-6 flex justify-around items-center z-40 shadow-lg">
+    <button onclick="mudarAba('painel')" id="nav-btn-painel" class="flex flex-col items-center text-wfs-red transition cursor-pointer">
+      <i class="fa fa-house text-lg"></i>
+      <span class="text-[10px] font-bold mt-1">Início</span>
+    </button>
+    <button onclick="mudarAba('gestao')" id="nav-btn-gestao" class="flex flex-col items-center text-slate-400 hover:text-slate-600 transition cursor-pointer">
+      <i class="fa fa-chart-pie text-lg"></i>
+      <span class="text-[10px] font-medium mt-1">Gestão</span>
+    </button>
+  </nav>
+
+  <!-- SCRIPT DE PROCESSAMENTO E DADOS -->
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzUqQYQBcjKHGZCN8fdvVHO9-73lgC-jgRtucDG3IF-m6tysyv-zRzZKKQMxVtSD_t_Sw/exec";
+    let todosLideres = [];
+    let todosColaboradores = [];
+    let terminalSelecionadoAtual = '';
+
+    function obterIndicePeriodo6Meses() {
+      const dataBase = new Date('2026-01-01T00:00:00Z').getTime();
+      const agora = new Date().getTime();
+      const diasPassados = Math.floor((agora - dataBase) / (1000 * 60 * 60 * 24));
+      return Math.floor(diasPassados / 180);
+    }
+
+    function geradorAleatorioComSemente(semente) {
+      let x = Math.sin(semente++) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function embaralharComSemente(array, sementeBase) {
+      let arr = [...array];
+      let s = sementeBase;
+      for (let i = arr.length - 1; i > 0; i--) {
+        s++;
+        const j = Math.floor(geradorAleatorioComSemente(s) * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function processarDadosGoogle(payload) {
+      const icone = document.querySelector('#btn-atualizar i');
+      if (icone) icone.classList.remove('fa-spin');
+
+      if (!payload) {
+        alert("Não foi possível carregar os dados da planilha. Verifique sua conexão.");
+        return;
+      }
+
+      if (Array.isArray(payload)) {
+        todosLideres = payload;
+        todosColaboradores = [];
+      } else {
+        todosLideres = payload.lideres || [];
+        todosColaboradores = payload.colaboradores || [];
+      }
+
+      todosLideres.forEach(l => l.membros = []);
+
+      const gruposLideres = {};
+      todosLideres.forEach(l => {
+        const chave = `${l.term_norm}_${l.turno_norm}`;
+        if (!gruposLideres[chave]) gruposLideres[chave] = [];
+        gruposLideres[chave].push(l);
+      });
+
+      const periodo6Meses = obterIndicePeriodo6Meses();
+      const gruposColaboradores = {};
+      todosColaboradores.forEach(colab => {
+        const chave = `${colab.term_norm}_${colab.turno_norm}`;
+        if (!gruposColaboradores[chave]) gruposColaboradores[chave] = [];
+        gruposColaboradores[chave].push(colab);
+      });
+
+      Object.keys(gruposColaboradores).forEach(chave => {
+        const lideresDoTurno = gruposLideres[chave];
+        const colaboradoresDoTurno = gruposColaboradores[chave];
+
+        if (lideresDoTurno && lideresDoTurno.length > 0) {
+          const colaboradoresEmbaralhados = embaralharComSemente(colaboradoresDoTurno, periodo6Meses + chave.length);
+
+          colaboradoresEmbaralhados.forEach(colab => {
+            let liderMenorEquipe = lideresDoTurno[0];
+            for (let i = 1; i < lideresDoTurno.length; i++) {
+              if (lideresDoTurno[i].membros.length < liderMenorEquipe.membros.length) {
+                liderMenorEquipe = lideresDoTurno[i];
+              }
+            }
+            liderMenorEquipe.membros.push(colab);
+            colab.lider_designado = liderMenorEquipe.nome_lider;
+          });
+        } else {
+          colaboradoresDoTurno.forEach(colab => colab.lider_designado = 'Não atribuído');
+        }
+      });
+
+      todosLideres.forEach(l => l.tamanho_equipe = l.membros.length);
+
+      preencherFiltros(todosLideres);
+      filtrarTerminalPílula('');
+      atualizarGestao();
+    }
+
+    function carregarDados() {
+      const icone = document.querySelector('#btn-atualizar i');
+      if (icone) icone.classList.add('fa-spin');
+
+      const scriptAntigo = document.getElementById('script-api-wfs');
+      if (scriptAntigo) scriptAntigo.remove();
+
+      const script = document.createElement('script');
+      script.id = 'script-api-wfs';
+      script.src = `${API_URL}?callback=processarDadosGoogle&t=${new Date().getTime()}`;
+      script.onerror = () => {
+        if (icone) icone.classList.remove('fa-spin');
+        alert("Erro ao atualizar os dados da planilha. Verifique sua conexão.");
+      };
+      document.body.appendChild(script);
+    }
+
+    // Botão Atualizar recarrega dados e retorna obrigatoriamente à página principal
+    function recarregarDadosManualmente() {
+      document.getElementById('input-busca-topo').value = '';
+      const selectTamanho = document.getElementById('select-filtro-tamanho');
+      if (selectTamanho) selectTamanho.value = 'todas';
+      mudarAba('painel');
+      carregarDados();
+    }
+
+    function mudarAba(aba) {
+      const secPainel = document.getElementById('secao-painel');
+      const secGestao = document.getElementById('secao-gestao');
+      const secBuscaRes = document.getElementById('secao-busca-resultados');
+      const secDetalhe = document.getElementById('secao-detalhe-equipe');
+      const btnPainel = document.getElementById('nav-btn-painel');
+      const btnGestao = document.getElementById('nav-btn-gestao');
+
+      [secPainel, secGestao, secBuscaRes, secDetalhe].forEach(s => s.classList.add('hidden'));
+      [btnPainel, btnGestao].forEach(b => b.className = "flex flex-col items-center text-slate-400 hover:text-slate-600 transition cursor-pointer");
+
+      if (aba === 'painel') {
+        secPainel.classList.remove('hidden');
+        btnPainel.className = "flex flex-col items-center text-wfs-red transition cursor-pointer";
+      } else if (aba === 'gestao') {
+        secGestao.classList.remove('hidden');
+        btnGestao.className = "flex flex-col items-center text-wfs-red transition cursor-pointer";
+      }
+    }
+
+    function voltarParaInicioPesquisa() {
+      document.getElementById('input-busca-topo').value = '';
+      mudarAba('painel');
+    }
+
+    function voltarParaResultados() {
+      document.getElementById('secao-detalhe-equipe').classList.add('hidden');
+      document.getElementById('secao-busca-resultados').classList.remove('hidden');
+    }
+
+    function normalizarTexto(texto) {
+      return String(texto || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+
+    function executarPesquisaGeral() {
+      const termoBruto = document.getElementById('input-busca-topo').value;
+      const termo = normalizarTexto(termoBruto);
+
+      const secPainel = document.getElementById('secao-painel');
+      const secGestao = document.getElementById('secao-gestao');
+      const secBuscaRes = document.getElementById('secao-busca-resultados');
+      const secDetalhe = document.getElementById('secao-detalhe-equipe');
+      const container = document.getElementById('lista-resultados-busca');
+
+      if (!termoBruto.trim()) {
+        secDetalhe.classList.add('hidden');
+        mudarAba('painel');
+        return;
+      }
+
+      [secPainel, secGestao, secDetalhe].forEach(s => s.classList.add('hidden'));
+      secBuscaRes.classList.remove('hidden');
+
+      const baseBuscaLideres = terminalSelecionadoAtual 
+        ? todosLideres.filter(l => normalizarTexto(l._terminal) === normalizarTexto(terminalSelecionadoAtual)) 
+        : todosLideres;
+
+      const baseBuscaColabs = terminalSelecionadoAtual 
+        ? todosColaboradores.filter(c => normalizarTexto(c._terminal) === normalizarTexto(terminalSelecionadoAtual)) 
+        : todosColaboradores;
+
+      const lideresEncontrados = baseBuscaLideres.filter(l => 
+        normalizarTexto(l.nome_lider).includes(termo) || 
+        normalizarTexto(l.chapa).includes(termo)
+      );
+
+      const colaboradoresEncontrados = baseBuscaColabs.filter(c => 
+        normalizarTexto(c.colaborador).includes(termo) || 
+        normalizarTexto(c.chapa).includes(termo)
+      );
+
+      const totalResultados = lideresEncontrados.length + colaboradoresEncontrados.length;
+      document.getElementById('qtd-resultados').textContent = `${totalResultados} resultado(s) encontrado(s)`;
+
+      if (totalResultados === 0) {
+        container.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Não encontramos nenhum registro correspondente a "${termoBruto}". Verifique o nome ou a matrícula.</div>`;
+        return;
+      }
+
+      let htmlResultados = '';
+
+      lideresEncontrados.forEach(l => {
+        const indiceReal = todosLideres.findIndex(item => item.chapa === l.chapa);
+        const qtdTexto = l.tamanho_equipe === 1 ? '1 COLABORADOR NA EQUIPE' : `${l.tamanho_equipe} COLABORADORES NA EQUIPE`;
+        
+        htmlResultados += `
+          <div class="bg-red-50/40 border border-red-200 rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-600 font-black flex items-center justify-center text-sm shadow-sm">
+                  ${l.nome_lider.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h4 class="text-sm font-black text-slate-900 uppercase">${l.nome_lider}</h4>
+                  <div class="text-xs font-extrabold text-azul-corporativo tracking-wide uppercase mt-0.5">${qtdTexto}</div>
+                  <p class="text-xs text-slate-500 font-mono mt-0.5">Matrícula: <span class="font-bold text-slate-700">${l.chapa || 'N/A'}</span></p>
+                  <p class="text-[10px] text-red-700 font-bold tracking-wider uppercase mt-1">Líder &bull; ${l._terminal || '-'} (${l.turno || '-'})</p>
+                </div>
+              </div>
+              <button onclick="mostrarEquipeDoLider(${indiceReal})" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs uppercase transition shadow flex items-center justify-center gap-2 cursor-pointer">
+                Ver Equipe <i class="fa fa-arrow-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      colaboradoresEncontrados.forEach(c => {
+        htmlResultados += `
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-xs shadow-sm">
+                  ${c.colaborador.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h4 class="text-xs font-black text-slate-900 uppercase">${c.colaborador}</h4>
+                  <p class="text-[10px] text-slate-500 font-mono">Matrícula: <span class="font-bold text-slate-700">${c.chapa || 'N/A'}</span></p>
+                  <p class="text-[10px] text-slate-600 mt-0.5">${c._terminal || '-'} / Turno ${c.turno || '-'}</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full">
+                Líder: ${c.lider_designado || 'Não atribuído'}
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-600 pt-2 border-t border-slate-200 flex justify-between items-center">
+              <span>Horário: <strong>${c.entrada || ''} - ${c.saida || ''}</strong></span>
+              <span class="text-[10px] text-slate-400 font-semibold uppercase">Colaborador</span>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = htmlResultados;
+    }
+
+    function mostrarEquipeDoLider(index) {
+      const l = todosLideres[index];
+      if (!l) return;
+
+      document.getElementById('detalhe-lider-nome').textContent = l.nome_lider;
+      document.getElementById('detalhe-lider-chapa').textContent = l.chapa || 'N/A';
+      document.getElementById('detalhe-lider-terminal').textContent = l._terminal || 'Terminal N/I';
+      document.getElementById('detalhe-lider-turno').textContent = `Turno ${l.turno || 'N/I'}`;
+
+      const qtdTexto = l.tamanho_equipe === 1 ? '1 COLABORADOR NA EQUIPE' : `${l.tamanho_equipe} COLABORADORES NA EQUIPE`;
+      document.getElementById('detalhe-total-equipe').textContent = qtdTexto;
+
+      const listaMembros = document.getElementById('lista-membros-equipe');
+      if (!l.membros || l.membros.length === 0) {
+        listaMembros.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Este líder não possui colaboradores vinculados na base de dados.</div>`;
+      } else {
+        listaMembros.innerHTML = l.membros.map((m, i) => `
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div class="text-xs font-black text-slate-900">${i + 1}. ${m.colaborador || '-'}</div>
+              <p class="text-[10px] text-slate-500 font-mono mt-0.5">Matrícula: <span class="font-bold text-slate-700">${m.chapa || 'N/A'}</span></p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Terminal: ${m._terminal || '-'} &bull; Turno: ${m.turno || '-'}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-xl shadow-sm">
+                ${m.entrada || ''} - ${m.saida || ''}
+              </span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('secao-painel').classList.add('hidden');
+      document.getElementById('secao-busca-resultados').classList.add('hidden');
+      document.getElementById('secao-detalhe-equipe').classList.remove('hidden');
+    }
+
+    function atualizarPainel(lideresFiltrados, terminalFiltro) {
+      terminalSelecionadoAtual = terminalFiltro;
+
+      const totalColabsFiltrados = lideresFiltrados.reduce((acc, l) => acc + l.tamanho_equipe, 0);
+
+      document.getElementById('kpid-lideres').textContent = lideresFiltrados.length;
+      document.getElementById('kpid-colaboradores').textContent = totalColabsFiltrados;
+      document.getElementById('kpid-detalhe-colaboradores').textContent = terminalFiltro ? `No ${terminalFiltro}` : `Total na operação`;
+
+      if (lideresFiltrados.length > 0) {
+        const mediaPessoas = Math.round(totalColabsFiltrados / lideresFiltrados.length);
+        document.getElementById('kpid-media').textContent = mediaPessoas;
+
+        let maiorLider = lideresFiltrados.reduce((max, l) => (l.tamanho_equipe > max.tamanho_equipe ? l : max), lideresFiltrados[0]);
+        if (maiorLider && maiorLider.tamanho_equipe > 0) {
+          document.getElementById('kpid-maior-equipe').textContent = `Maior: ${maiorLider.nome_lider.split(' ')[0]} (${maiorLider.tamanho_equipe})`;
+        } else {
+          document.getElementById('kpid-maior-equipe').textContent = `Maior: -`;
+        }
+      } else {
+        document.getElementById('kpid-media').textContent = '0';
+        document.getElementById('kpid-maior-equipe').textContent = `Maior: -`;
+      }
+
+      const terminaisAtivos = [...new Set(lideresFiltrados.map(l => l._terminal).filter(Boolean))];
+      const turnosAtivos = [...new Set(lideresFiltrados.map(l => l.turno).filter(Boolean))];
+      document.getElementById('kpid-terminais-turnos').textContent = `${terminaisAtivos.length} / ${turnosAtivos.length}`;
+      document.getElementById('kpid-detalhe-turnos').textContent = terminaisAtivos.length > 0 ? terminaisAtivos.join(', ') : 'Nenhum ativo';
+
+      // Aplica o filtro da caixa de seleção (todas, maior ou menor equipe)
+      const tipoFiltroTamanho = document.getElementById('select-filtro-tamanho').value;
+      let lideresParaExibir = [...lideresFiltrados];
+
+      if (tipoFiltroTamanho === 'maior' && lideresParaExibir.length > 0) {
+        const maiorTamanho = Math.max(...lideresParaExibir.map(l => l.tamanho_equipe));
+        lideresParaExibir = lideresParaExibir.filter(l => l.tamanho_equipe === maiorTamanho);
+      } else if (tipoFiltroTamanho === 'menor' && lideresParaExibir.length > 0) {
+        const menorTamanho = Math.min(...lideresParaExibir.map(l => l.tamanho_equipe));
+        lideresParaExibir = lideresParaExibir.filter(l => l.tamanho_equipe === menorTamanho);
+      }
+
+      document.getElementById('contador-lideres').textContent = `${lideresParaExibir.length} líderes`;
+
+      const grid = document.getElementById('grid-lideres');
+      if (lideresParaExibir.length === 0) {
+        grid.innerHTML = `<div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm text-center text-slate-400 text-xs">Nenhum líder encontrado para esta seleção.</div>`;
+        return;
+      }
+
+      grid.innerHTML = lideresParaExibir.map((l) => {
+        const indiceReal = todosLideres.findIndex(item => item.chapa === l.chapa);
+        return `
+          <div onclick='mostrarEquipeDoLider(${indiceReal})' class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 font-bold flex items-center justify-center text-xs">
+                ${l.nome_lider.substring(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <h4 class="text-xs font-black text-slate-800 uppercase">${l.nome_lider}</h4>
+                <p class="text-[10px] text-slate-400">Chapa ${l.chapa || '-'} &bull; ${l._terminal || '-'} (${l.turno || '-'})</p>
+              </div>
+            </div>
+            <div class="text-right flex items-center gap-3">
+              <div>
+                <span class="text-sm font-black text-slate-800">${l.tamanho_equipe}</span>
+                <div class="text-[9px] text-slate-400 uppercase font-semibold">colabs</div>
+              </div>
+              <i class="fa fa-chevron-right text-xs text-slate-300"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function mudarFiltroTamanhoEquipe() {
+      const filtrados = terminalSelecionadoAtual 
+        ? todosLideres.filter(l => normalizarTexto(l._terminal) === normalizarTexto(terminalSelecionadoAtual)) 
+        : todosLideres;
+      atualizarPainel(filtrados, terminalSelecionadoAtual);
+    }
+
+    function atualizarGestao() {
+      const container = document.getElementById('resumo-turnos-terminais');
+      const dadosGestao = {};
+      todosColaboradores.forEach(c => {
+        const term = c._terminal || 'Outros';
+        const turno = c.turno || 'Geral';
+        if (!dadosGestao[term]) dadosGestao[term] = { total: 0, turnos: {} };
+        dadosGestao[term].total++;
+        dadosGestao[term].turnos[turno] = (dadosGestao[term].turnos[turno] || 0) + 1;
+      });
+
+      if (Object.keys(dadosGestao).length === 0) {
+        container.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">Nenhum dado de terminal encontrado.</div>`;
+        return;
+      }
+
+      container.innerHTML = Object.keys(dadosGestao).map(term => {
+        const info = dadosGestao[term];
+        const turnosHtml = Object.keys(info.turnos).map(tur => `
+          <div class="bg-slate-50 border border-slate-100 p-3 rounded-xl flex justify-between items-center">
+            <span class="text-xs font-bold text-slate-700">Turno ${tur}</span>
+            <span class="text-xs font-black bg-blue-50 text-blue-700 px-3 py-1 rounded-lg">${info.turnos[tur]} colaboradores</span>
+          </div>
+        `).join('');
+
+        return `
+          <div class="border border-slate-100 bg-white rounded-2xl p-4 shadow-sm">
+            <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+              <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">${term}</h4>
+              <span class="text-xs font-bold text-slate-500">Total: ${info.total} colaboradores</span>
+            </div>
+            <div class="space-y-2">${turnosHtml}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function preencherFiltros(lideres) {
+      const containerBotoes = document.getElementById('botoes-terminais');
+      const terminais = [...new Set(lideres.map(l => l._terminal).filter(Boolean))].sort();
+      
+      let htmlBotoes = `<button onclick="filtrarTerminalPílula('')" id="pill-todos" class="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-full transition shadow-sm cursor-pointer">Todos</button>`;
+      
+      terminais.forEach(t => {
+        htmlBotoes += `<button onclick="filtrarTerminalPílula('${t}')" id="pill-${t}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-full transition cursor-pointer">${t}</button>`;
+      });
+
+      containerBotoes.innerHTML = htmlBotoes;
+    }
+
+    function filtrarTerminalPílula(termo) {
+      const filtrados = termo ? todosLideres.filter(l => normalizarTexto(l._terminal) === normalizarTexto(termo)) : todosLideres;
+      
+      const todasPills = document.querySelectorAll('#botoes-terminais button');
+      todasPills.forEach(p => {
+        p.className = "bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-full transition cursor-pointer";
+      });
+
+      if (!termo) {
+        const pillTodos = document.getElementById('pill-todos');
+        if (pillTodos) pillTodos.className = "bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-full transition shadow-sm cursor-pointer";
+      } else {
+        const pillTerm = document.getElementById(`pill-${termo}`);
+        if (pillTerm) pillTerm.className = "bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-full transition shadow-sm cursor-pointer";
+      }
+
+      atualizarPainel(filtrados, termo);
+    }
+
+    carregarDados();
+  </script>
+</body>
+</html>
